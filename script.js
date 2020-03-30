@@ -45,7 +45,7 @@ let displayAlien = () => {
 gameStart();
 displayUser();
 displayAlien()
-////;
+////
 //Helper functions
 let lineOfSight = () => {
     lineOfSightArray = [];
@@ -100,15 +100,7 @@ let wait = async (ms) => {
 //Main Decision Logic
 let userDecision = () => {
     //Resetting the display
-    if (headsUpDisplay.contains(document.getElementById('move-button'))){
-        headsUpDisplay.removeChild(document.getElementById('move-button'))
-    }
-    if (headsUpDisplay.contains(document.getElementById('attack-button'))){
-        headsUpDisplay.removeChild(document.getElementById('attack-button'))
-    }
-    if (headsUpDisplay.contains(document.getElementById('attack-probability-display'))){
-        headsUpDisplay.removeChild(document.getElementById('attack-probability-display'))
-    }
+    headsUpDisplay.innerHTML = ""
     //Setting up
     currentStage = "user decision"
     headsUpDisplay.classList.remove('hidden');
@@ -192,7 +184,7 @@ let noCollision = (futureRow, futureColumn) => {
     return true;
 }
 
-let soldierAttack = () => {
+let soldierAttack = async () => {
     currentStage = "soldier attack";
     let chance = Math.random() * 100;
     //hit message
@@ -207,7 +199,7 @@ let soldierAttack = () => {
     //miss message
     let missMessage = document.createElement('div');
     missMessage.id = "miss-message"
-    missMessage.innerText = "You missed! Its the alien's turn now";
+    missMessage.innerText = "You missed!";
 
     if (chance < attackProbability){
         //Display hit gif
@@ -218,14 +210,12 @@ let soldierAttack = () => {
         hitGif.id = "hit-gif"
         hitGif.src = "img/shooting.gif"
         headsUpDisplay.appendChild(hitGif)
-        const hidingGif =  async () => {
-            await wait(1000)
-            hitGif.classList.add('hidden');
-            headsUpDisplay.appendChild(hitMessage);
-            headsUpDisplay.appendChild(playAgainButton);
-        }
-        hidingGif();
-    } else {
+        await wait(1000)
+        hitGif.classList.add('hidden');
+        headsUpDisplay.appendChild(hitMessage);
+        headsUpDisplay.appendChild(playAgainButton);
+        return;
+     } else {
         //Display miss gif
         document.getElementById('attack-button').classList.add('hidden')
         document.getElementById('move-button').classList.add('hidden')
@@ -233,30 +223,158 @@ let soldierAttack = () => {
         let missGif = document.createElement('img')
         missGif.id = "miss-gif"
         missGif.src = "img/missing_shot.gif"
+        headsUpDisplay.appendChild(missMessage);
         headsUpDisplay.appendChild(missGif)
-        const hidingGif =  async () => {
-            await wait(2000);
-            missGif.classList.add('hidden');
-            headsUpDisplay.appendChild(missMessage);
-            await wait(1000);
+        await wait(4000);
         }
-        hidingGif();
-        alienAction()
-    }
+    alienAction()
 }
 
 let alienAction = async () => {
     currentStage = "alien action"
-    console.log("alien time")
-    //if line of sight true, attack
-    //else, alien move
-    //trigger user decision function
+    //Inform user that it is Alien's turn. 1 second
+    headsUpDisplay.innerHTML = "";
+    let alienMessage = document.createElement('div')
+    alienMessage.innerText = "Its the Alien's turn!"
+    alienMessage.id = "alien-message"
+    headsUpDisplay.appendChild(alienMessage);
+    await wait(1000);
+    //Show alien move range. Inform user that Alien is thinking.
+    for (let i = alienPositionRow - 2; i <= alienPositionRow + 2; i++){
+        for (let j = alienPositionColumn - 2; j <= alienPositionColumn + 2; j++){
+            if (noCollision(i, j)){
+                let squareSpace = document.getElementById(`${i},${j}`);
+                squareSpace.classList.add('selected-tile');
+            }
+        }
+    }
+    let thinkingAlien = document.createElement('img');
+    thinkingAlien.src = "img/alien_thinking.gif";
+    thinkingAlien.id = "thinking-alien-gif"
+    headsUpDisplay.appendChild(thinkingAlien);
+    alienMessage.innerText = "Alien is thinking"
+    await wait(500);
+    alienMessage.innerText = "Alien is thinking."
+    await wait(600);
+    alienMessage.innerText = "Alien is thinking.."
+    await wait(700);
+    alienMessage.innerText = "Alien is thinking..."
+    await wait(800);
+    //Alien makes his choice.
+    headsUpDisplay.removeChild(thinkingAlien);
+    //Remove alien move range
+    alienMessage.innerText = "Alien has decided!"
+    for (let i = alienPositionRow - 2; i <= alienPositionRow + 2; i++){
+        for (let j = alienPositionColumn - 2; j <= alienPositionColumn + 2; j++){
+            if (noCollision(i, j)){
+                let squareSpace = document.getElementById(`${i},${j}`);
+                squareSpace.classList.remove('selected-tile');
+            }
+        }
+    }
+    await wait(2000);
+    if (lineOfSight()){ //Alien attack
+        alienMessage.innerText = "Alien will attack!"
+        let shootingAlien = document.createElement('img');
+        shootingAlien.src = "img/alien_shooting.gif";
+        shootingAlien.id = "shooting-alien-gif";
+        headsUpDisplay.appendChild(shootingAlien);
+        //alien choosing to shoot gif
+        await wait(2000);
+        headsUpDisplay.removeChild(shootingAlien);
+        //Run probability mechanics
+        let chance = Math.random() * 100;
+        if (chance < attackProbability) { // if hit
+            let alienHitGif = document.createElement('img');
+            alienHitGif.id = "alien-hit-gif";
+            alienHitGif.src = "img/alien_hit.gif";
+            headsUpDisplay.appendChild(alienHitGif);
+            alienMessage.innerText = "Its a hit!"
+            await wait(2000);
+            //Clear display and show play again  button
+            headsUpDisplay.removeChild(alienHitGif);
+            alienMessage.innerText = "Game Over...";
+            let playAgainButton = document.createElement('button');
+            playAgainButton.id = "play-again-button"
+            playAgainButton.innerText = "Play Again?"
+            playAgainButton.addEventListener('click', resetGame);
+            headsUpDisplay.appendChild(playAgainButton);
+            //exit the function
+            return
+        } else {
+            let alienMissGif = document.createElement('img');
+            alienMissGif.id = "alien-miss-gif";
+            alienMissGif.src = "img/alien_miss.gif";
+            headsUpDisplay.appendChild(alienMissGif);
+            alienMessage.innerText = "The Alien Missed!"
+            await wait(2000);
+            headsUpDisplay.removeChild(alienMissGif);
+        }
+    } else{ //Alien move
+        alienMessage.innerText = "Alien will move!"
+        let walkingAlien = document.createElement('img');
+        walkingAlien.src = "img/alien_walking.gif";
+        walkingAlien.id = "walking-alien-gif";
+        headsUpDisplay.appendChild(walkingAlien);
+        await wait(2000);
+        moveAlien();
+        await wait(1000);
+        moveAlien();
+        await wait(1000);
+        headsUpDisplay.removeChild(walkingAlien);
+    }
+
+    alienMessage.innerText = "Its your turn now!"
+    await wait(2000)
     userDecision();
 }
 
+let moveAlien = () => {
+    //Remove current alien display
+    document.getElementById(`${alienPositionRow},${alienPositionColumn}`).style.backgroundImage = "";
+    //While true loop, randomized direction
+    while (true){
+        let randomDirectionNumber = Math.floor((Math.random() * 4) + 1)
+        //Direction Up
+        if (randomDirectionNumber === 1 && alienPositionRow != 0 && gameState[alienPositionRow - 1][alienPositionColumn] === null){
+            gameState[alienPositionRow - 1][alienPositionColumn] = "alien";
+            gameState[alienPositionRow][alienPositionColumn] = null;
+            alienPositionRow--;
+            break;
+        }
+        //Direction Down
+        else if (randomDirectionNumber === 2 && alienPositionRow != 9 && gameState[alienPositionRow + 1][alienPositionColumn] === null){
+            gameState[alienPositionRow + 1][alienPositionColumn] = "alien";
+            gameState[alienPositionRow][alienPositionColumn] = null;
+            alienPositionRow++
+            break
+        }
+        //Direction Left
+        else if (randomDirectionNumber === 3 && alienPositionColumn != 0 && gameState[alienPositionRow][alienPositionColumn - 1] === null){
+            gameState[alienPositionRow][alienPositionColumn - 1] = "alien";
+            gameState[alienPositionRow][alienPositionColumn] = null;
+            alienPositionColumn--;
+            break
+        }
+        //Direction Right
+        else if (randomDirectionNumber === 4 && alienPositionColumn != 9 ** gameState[alienPositionRow][alienPositionColumn + 1] === null) {
+            gameState[alienPositionRow][alienPositionColumn + 1] = "alien";
+            gameState[alienPositionRow][alienPositionColumn] = null;
+            alienPositionColumn++;
+            break
+        }
+        //Keep going until you get a direction
+        else {
+            continue;
+        }
+    }
+    displayAlien()
+}
+
 let resetGame = () => {
-    //Clear user of the DOM
+    //Clear user and alien of the DOM
     document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = ""
+    document.getElementById(`${alienPositionRow},${alienPositionColumn}`).style.backgroundImage = ""
     //Clear Heads Up Display Children
     headsUpDisplay.innerHTML = "";
     //Reset Game state
