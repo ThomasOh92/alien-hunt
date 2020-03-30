@@ -4,6 +4,7 @@ let userPositionRow = 0;
 let userPositionColumn = 0;
 let alienPositionRow = 8;
 let alienPositionColumn = 8;
+let lineOfSightArray;
 ///
 let currentStage = "user decision";
 let destinationRow = 0;
@@ -90,6 +91,14 @@ let lineOfSight = () => {
 ////
 //Main Decision Logic
 let userDecision = () => {
+    //Resetting the display
+    if (headsUpDisplay.contains(document.getElementById('move-button'))){
+        headsUpDisplay.removeChild(document.getElementById('move-button'))
+    }
+    if (headsUpDisplay.contains(document.getElementById('attack-button'))){
+        headsUpDisplay.removeChild(document.getElementById('attack-button'))
+    }
+    //Setting up
     currentStage = "user decision"
     headsUpDisplay.classList.remove('hidden');
     //Creating move button
@@ -110,26 +119,72 @@ let userDecision = () => {
 
 let soldierMove = () => {
     currentStage = "soldier move";
-    //loop to add event listeners to all squares within 3 spaces. When clicked, function will
-        //update the destination row column variables
-        //update the game state and DOM displays
-        //trigger alien action function
-    //loop to add css class to those squares
-        //luminous red, to demarcate max distance that can be travelled
-        //on hover background luminous green
+    //function to update game state and DOM displays
+    //after updates, function will also trigger alien action function
+    let moveAction = function() {
+        //Remove previous stylings
+        for (let i = userPositionRow - 2; i <= userPositionRow + 2; i++){
+             for (let j = userPositionColumn - 2; j <= userPositionColumn + 2; j++){
+                if (noCollision(i, j)){
+                    let squareSpace = document.getElementById(`${i},${j}`);
+                    squareSpace.classList.remove('selected-tile');
+                }
+            }
+        }
+        //Clear user's previous spot in DOM
+        document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "";
+        //Clear user's previous spot in game state
+        gameState[userPositionRow][userPositionColumn] = null;
+        //Getting new coordinates
+        let newRow = this.id.split(",").map(x => parseInt(x))[0];
+        let newColumn = this.id.split(",").map(x => parseInt(x))[1];
+        //Set user's new spot in the game state base on coordinates in the array
+        gameState[newRow][newColumn] = "user";
+        userPositionRow = newRow;
+        userPositionColumn = newColumn;
+        //Set user's new spot in DOM --- this.backgroundImage = that pic
+        this.style.backgroundImage = "url('img/soldier_face_right.png')";
+        //trigger for alien action
+        alienAction()
+    }
+    //loop to add event listeners to all squares within 3 spaces. When clicked, function will update the game state and DOM displays
+    for (let i = userPositionRow - 2; i <= userPositionRow + 2; i++){
+         for (let j = userPositionColumn - 2; j <= userPositionColumn + 2; j++){
+            if (noCollision(i, j)){
+                let squareSpace = document.getElementById(`${i},${j}`);
+                squareSpace.addEventListener('click', moveAction);
+                squareSpace.classList.add('selected-tile');
+            }
+        }
+    }
+}
+
+let noCollision = (futureRow, futureColumn) => {
+    if (futureRow < 0 || futureRow > 9){
+        return false;
+    }
+    if (futureColumn < 0 || futureColumn > 9){
+        return false;
+    }
+    if (gameState[futureRow][futureColumn] != null ){
+        return false;
+    }
+    return true;
 }
 
 let soldierAttack = () => {
     currentStage = "soldier attack";
     //attempt hit function
-    //update stage to alien turn
+    alienAction()
 }
 
 let alienAction = () => {
     currentStage = "alien action"
+    console.log("alien time")
     //if line of sight true, attack
     //else, alien move
     //trigger user decision function
+    userDecision();
 }
 
 userDecision();

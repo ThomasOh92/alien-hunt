@@ -17,6 +17,16 @@ body{
 	background-position: center;
 }
 
+.selected-tile{
+   background-color: red;
+   /*luminous red, to demarcate max distance that can be travelled
+    on hover background luminous green*/
+}
+
+.selected-tile:hover{
+	background-color: green;
+}
+
 #message, #attack-display{
 	color: white;
 }
