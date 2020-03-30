@@ -55,13 +55,21 @@ body{
 	flex-direction: column;
 }
 
-#move-button, #attack-button{
+#move-button, #attack-button, #attack-probability-display, #play-again-button, #hit-message, #miss-message{
 	height: 30px;
   background: none;
   color: aqua;
   text-transform: uppercase;
   text-decoration: none;
-  border: 0.2em solid aqua;
   padding: 0.5em 1em;
   margin: 5px;
+  font-family: Arial;
+}
+
+#move-button, #attack-button, #play-again-button {
+  border: 0.2em solid aqua;
+}
+#hit-gif, #miss-gif{
+	height: 150px;
+	width: 250px;
 }

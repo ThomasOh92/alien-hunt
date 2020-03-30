@@ -5,6 +5,7 @@ let userPositionColumn = 0;
 let alienPositionRow = 8;
 let alienPositionColumn = 8;
 let lineOfSightArray;
+let attackProbability;
 ///
 let currentStage = "user decision";
 let destinationRow = 0;
@@ -88,6 +89,13 @@ let lineOfSight = () => {
     //if any of the squares are opaque, return false
     //return true
 }
+
+let wait = async (ms) => {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
 ////
 //Main Decision Logic
 let userDecision = () => {
@@ -98,6 +106,9 @@ let userDecision = () => {
     if (headsUpDisplay.contains(document.getElementById('attack-button'))){
         headsUpDisplay.removeChild(document.getElementById('attack-button'))
     }
+    if (headsUpDisplay.contains(document.getElementById('attack-probability-display'))){
+        headsUpDisplay.removeChild(document.getElementById('attack-probability-display'))
+    }
     //Setting up
     currentStage = "user decision"
     headsUpDisplay.classList.remove('hidden');
@@ -106,12 +117,20 @@ let userDecision = () => {
     moveButton.id = "move-button";
     moveButton.innerText = "Move Soldier";
     headsUpDisplay.appendChild(moveButton);
-    //attack button only displays if lineOfSight is true
+    //attack button and attack probability only display if lineOfSight is true
     let attackButton = document.createElement('button');
-    attackButton.id = "attack-button";
-    attackButton.innerText = "Attack!";
+    let attackProbabilityDisplay = document.createElement('div');
     if (lineOfSight()){
+        //attack button
+        attackButton.id = "attack-button";
+        attackButton.innerText = "Attack!";
+        //attack probability
+        attackProbability = 100 - (lineOfSightArray.length * 10);
+        attackProbabilityDisplay.id = "attack-probability-display";
+        attackProbabilityDisplay.innerText = "Your Attack Probability is: " + attackProbability + "%";
+        //appending them
         headsUpDisplay.appendChild(attackButton);
+        headsUpDisplay.appendChild(attackProbabilityDisplay)
     }
     moveButton.addEventListener('click', soldierMove)
     attackButton.addEventListener('click', soldierAttack)
@@ -122,11 +141,12 @@ let soldierMove = () => {
     //function to update game state and DOM displays
     //after updates, function will also trigger alien action function
     let moveAction = function() {
-        //Remove previous stylings
+        //Remove previous stylings and listeners
         for (let i = userPositionRow - 2; i <= userPositionRow + 2; i++){
              for (let j = userPositionColumn - 2; j <= userPositionColumn + 2; j++){
                 if (noCollision(i, j)){
                     let squareSpace = document.getElementById(`${i},${j}`);
+                    squareSpace.removeEventListener('click', moveAction);
                     squareSpace.classList.remove('selected-tile');
                 }
             }
@@ -174,16 +194,92 @@ let noCollision = (futureRow, futureColumn) => {
 
 let soldierAttack = () => {
     currentStage = "soldier attack";
-    //attempt hit function
-    alienAction()
+    let chance = Math.random() * 100;
+    //hit message
+    let hitMessage = document.createElement('div');
+    hitMessage.innerText = "Congratulations! You killed the alien!"
+    hitMessage.id = "hit-message"
+    //play again button
+    let playAgainButton = document.createElement('button');
+    playAgainButton.id = "play-again-button"
+    playAgainButton.innerText = "Play Again?"
+    playAgainButton.addEventListener('click', resetGame)
+    //miss message
+    let missMessage = document.createElement('div');
+    missMessage.id = "miss-message"
+    missMessage.innerText = "You missed! Its the alien's turn now";
+
+    if (chance < attackProbability){
+        //Display hit gif
+        document.getElementById('attack-button').classList.add('hidden')
+        document.getElementById('move-button').classList.add('hidden')
+        document.getElementById('attack-probability-display').classList.add('hidden')
+        let hitGif = document.createElement('img')
+        hitGif.id = "hit-gif"
+        hitGif.src = "img/shooting.gif"
+        headsUpDisplay.appendChild(hitGif)
+        const hidingGif =  async () => {
+            await wait(1000)
+            hitGif.classList.add('hidden');
+            headsUpDisplay.appendChild(hitMessage);
+            headsUpDisplay.appendChild(playAgainButton);
+        }
+        hidingGif();
+    } else {
+        //Display miss gif
+        document.getElementById('attack-button').classList.add('hidden')
+        document.getElementById('move-button').classList.add('hidden')
+        document.getElementById('attack-probability-display').classList.add('hidden')
+        let missGif = document.createElement('img')
+        missGif.id = "miss-gif"
+        missGif.src = "img/missing_shot.gif"
+        headsUpDisplay.appendChild(missGif)
+        const hidingGif =  async () => {
+            await wait(2000);
+            missGif.classList.add('hidden');
+            headsUpDisplay.appendChild(missMessage);
+            await wait(1000);
+        }
+        hidingGif();
+        alienAction()
+    }
 }
 
-let alienAction = () => {
+let alienAction = async () => {
     currentStage = "alien action"
     console.log("alien time")
     //if line of sight true, attack
     //else, alien move
     //trigger user decision function
+    userDecision();
+}
+
+let resetGame = () => {
+    //Clear user of the DOM
+    document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = ""
+    //Clear Heads Up Display Children
+    headsUpDisplay.innerHTML = "";
+    //Reset Game state
+    gameState = [];
+    for (let i = 0; i < 10; i++){
+        let gameStateRow = [];
+        gameState.push(gameStateRow);
+        for (let k = 0; k < 10; k++){
+            gameStateRow.push(null);
+        }
+    }
+    gameState[0][0] = "user";
+    gameState[8][8] = "alien"
+    userPositionRow = 0;
+    userPositionColumn = 0;
+    alienPositionRow = 8;
+    alienPositionColumn = 8;
+    for (let a = 2; a < 7; a++){
+        gameState[a][4] = "wall";
+    }
+    //Display again, back to user decision
+    displayUser();
+    displayAlien();
     userDecision();
 }
 
