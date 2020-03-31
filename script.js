@@ -408,6 +408,7 @@ let resetGame = () => {
     for (let a = 2; a < 7; a++){
         gameState[a][4] = "wall";
     }
+    currentLevel = 0;
     //Display again, back to user decision
     displayUser();
     displayAlien();
