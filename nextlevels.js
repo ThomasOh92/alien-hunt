@@ -27,13 +27,16 @@ let nextLevelReset = () =>{
     //generate and place level + 1 aliens. Game state and DOM
     for (let i = 0; i <= currentLevel; i++){
         gameState[8][8 - i] = "alien";
-        document.getElementById(`8,${8 - i}`).style.backgroundImage = "url('img/alien_idle_face_right')";
+        document.getElementById(`8,${8 - i}`).style.backgroundImage = "url('img/alien_idle_face_right.png')";
         alienLocations.push([8, 8 - i])
     }
     for (let a = 2; a < 7; a++){
         gameState[a][4] = "wall";
+        document.getElementById(`${a},${4}`).style.backgroundImage = "url('img/brick_wall.png')";
     }
     //Display user
+    userPositionRow = 0;
+    userPositionColumn = 0;
     displayUser();
     //Display multiple aliens
     userDecisionMA();
@@ -112,7 +115,7 @@ let userDecisionMA = () => {
         let attackButton = document.createElement('button');
         let attackProbabilityDisplay = document.createElement('div');
         attackButton.classList.add("attack-buttons");
-        attackButton.innerText = "Attack Alien at Grid Spot" + visibleAliens[i].toString();
+        attackButton.innerText = "Attack Alien at Grid Spot " + visibleAliens[i].toString();
         //attack probability based on distance to alien
         let a = (visibleAliens[i][1] - userPositionColumn);
         let b = (visibleAliens[i][0] - userPositionRow);
@@ -124,10 +127,10 @@ let userDecisionMA = () => {
         attackDisplay.appendChild(attackButton);
         attackDisplay.appendChild(attackProbabilityDisplay);
         headsUpDisplay.appendChild(attackDisplay);
-        attackButton.addEventListener('click', triggerAttack);
         let triggerAttack = () => {
             soldierAttackMA(attackProbability, visibleAliens[i]);
         }
+        attackButton.addEventListener('click', triggerAttack);
     }
 }
 
@@ -174,7 +177,7 @@ let soldierMoveMA = () => {
     }
 }
 
-let soldierAttackMA = (attackChance, alienCoords) => {
+let soldierAttackMA = async (attackChance, alienCoords) => {
     currentStage = "soldier attack, there are multiple aliens";
     let chance = Math.random() * 100;
     //hit message
@@ -208,9 +211,7 @@ let soldierAttackMA = (attackChance, alienCoords) => {
      } else {
         document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "url('img/soldier_dom_shooting.png')";
         //Display miss gif
-        document.getElementById('attack-button').classList.add('hidden')
-        document.getElementById('move-button').classList.add('hidden')
-        document.getElementById('attack-probability-display').classList.add('hidden')
+        headsUpDisplay.innerHTML = "";
         let missGif = document.createElement('img')
         missGif.id = "miss-gif"
         missGif.src = "img/missing_shot.gif"
@@ -243,7 +244,7 @@ let checkWin = () => {
     alienActionMA();
 }
 
-let alienActionMA = () => {
+let alienActionMA = async () => {
     currentStage = "multiple alien action"
     //Inform user that its the aliens' turn, and they are thinking
     headsUpDisplay.innerHTML = "";
@@ -307,6 +308,7 @@ let alienActionMA = () => {
                 playAgainButton.addEventListener('click', resetGame);
                 headsUpDisplay.appendChild(playAgainButton);
                 //Resetting DOM alien
+                document.getElementById(`${alienLocations[i][0]},${alienLocations[i][1]}`).removeChild(highlightedLayer);
                 document.getElementById(`${alienLocations[i][0]},${alienLocations[i][1]}`).style.backgroundImage = "url('img/alien_idle_face_right.png')"
             } else {
                 let alienMissGif = document.createElement('img');
@@ -316,6 +318,7 @@ let alienActionMA = () => {
                 alienMessage.innerText = "The Alien Missed!"
                 await wait(2000);
                 headsUpDisplay.removeChild(alienMissGif);
+                document.getElementById(`${alienLocations[i][0]},${alienLocations[i][1]}`).removeChild(highlightedLayer);
                 document.getElementById(`${alienLocations[i][0]},${alienLocations[i][1]}`).style.backgroundImage = "url('img/alien_idle_face_right.png')";
             }
         } else {
@@ -325,10 +328,8 @@ let alienActionMA = () => {
             walkingAlien.id = "walking-alien-gif";
             headsUpDisplay.appendChild(walkingAlien);
             await wait(2000);
-            moveSpecificAlien(alienLocations[i][0], alienLocations[i][1]);
-            await wait(1000);
-            moveSpecificAlien(alienLocations[i][0], alienLocations[i][1]);
-            await wait(1000);
+            moveSpecificAlien(alienLocations[i][0], alienLocations[i][1], alienLocations[i]);
+            await wait(2000);
             headsUpDisplay.removeChild(walkingAlien);
         }
     }
@@ -337,9 +338,10 @@ let alienActionMA = () => {
     userDecisionMA();
 }
 
-let moveSpecificAlien = (alienRow, alienCol) =>{
+let moveSpecificAlien = (alienRow, alienCol, arr) =>{
     //Remove current alien display
     document.getElementById(`${alienRow},${alienCol}`).style.backgroundImage = "";
+    console.log(arr)
     //While true loop, randomized direction
     while (true){
         let randomDirectionNumber = Math.floor((Math.random() * 4) + 1)
@@ -347,7 +349,8 @@ let moveSpecificAlien = (alienRow, alienCol) =>{
         if (randomDirectionNumber === 1 && alienRow != 0 && gameState[alienRow - 1][alienCol] === null){
             gameState[alienRow - 1][alienCol] = "alien";
             gameState[alienRow][alienCol] = null;
-            document.getElementById(`${alienRow - 1},${alienCol}`).style.backgroundImage = "url('img/alien_idle_face_right.png')"
+            document.getElementById(`${alienRow - 1},${alienCol}`).style.backgroundImage = "url('img/alien_idle_face_right.png')";
+            arr[0]--
             break;
         }
         //Direction Down
@@ -355,6 +358,7 @@ let moveSpecificAlien = (alienRow, alienCol) =>{
             gameState[alienRow + 1][alienCol] = "alien";
             gameState[alienRow][alienCol] = null;
             document.getElementById(`${alienRow + 1},${alienCol}`).style.backgroundImage = "url('img/alien_idle_face_right.png')"
+            arr[0]++
             break
         }
         //Direction Left
@@ -362,6 +366,7 @@ let moveSpecificAlien = (alienRow, alienCol) =>{
             gameState[alienRow][alienCol - 1] = "alien";
             gameState[alienRow][alienCol] = null;
             document.getElementById(`${alienRow},${alienCol - 1}`).style.backgroundImage = "url('img/alien_idle_face_right.png')"
+            arr[1]--
             break
         }
         //Direction Right
@@ -369,6 +374,7 @@ let moveSpecificAlien = (alienRow, alienCol) =>{
             gameState[alienRow][alienCol + 1] = "alien";
             gameState[alienRow][alienCol] = null;
             document.getElementById(`${alienRow},${alienCol + 1}`).style.backgroundImage = "url('img/alien_idle_face_right.png')"
+            arr[1]++
             break
         }
         //Keep going until you get a direction
@@ -377,3 +383,5 @@ let moveSpecificAlien = (alienRow, alienCol) =>{
         }
     }
 }
+
+document.getElementById('skip-level-button').addEventListener('click', nextLevelReset);

@@ -36,11 +36,12 @@ h2 {
 
 .highlighted-layer{
 	background-color: rgba(0, 255, 0, 0.4);
-	position: absolute;
-	top: 0;
-	left: 0;
 	width: 100%;
 	height: 100%;
+}
+
+.attack-buttons:hover{
+	background-color: rgba(0, 255, 255, 0.4);
 }
 
 #message, #attack-display{
@@ -77,7 +78,7 @@ h2 {
 	flex-direction: column;
 }
 
-#move-button, #attack-button, #attack-probability-display, #play-again-button, #hit-message, #miss-message, #alien-message, #start-game-button, #message-display, #next-level-button {
+.attack-buttons, #move-button, #attack-button, #attack-probability-display, #play-again-button, #hit-message, #miss-message, #alien-message, #start-game-button, #message-display, #next-level-button, #skip-level-button {
 	height: 30px;
   background: none;
   color: aqua;
@@ -88,7 +89,7 @@ h2 {
   font-family: 'Exo 2', sans-serif;
 }
 
-#move-button, #attack-button, #play-again-button, #start-game-button, #next-level-button {
+.attack-buttons, #move-button, #attack-button, #play-again-button, #start-game-button, #next-level-button, #skip-level-button {
   border: 0.2em solid aqua;
 }
 
@@ -109,6 +110,10 @@ h2 {
 }
 
 #next-level-button:hover{
+	background-color: rgba(0, 255, 255, 0.4);
+}
+
+#skip-level-button:hover{
 	background-color: rgba(0, 255, 255, 0.4);
 }
 

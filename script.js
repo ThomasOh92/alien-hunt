@@ -220,7 +220,11 @@ let soldierAttack = async () => {
         await wait(1000)
         hitGif.classList.add('hidden');
         headsUpDisplay.appendChild(hitMessage);
-        headsUpDisplay.appendChild(playAgainButton);
+        let nextLevelButton = document.createElement('button');
+        nextLevelButton.id = "next-level-button";
+        nextLevelButton.innerText = "Next Level?"
+        nextLevelButton.addEventListener('click', nextLevelReset);
+        headsUpDisplay.appendChild(nextLevelButton);
         document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "url('img/soldier_face_right.png')";
         return;
      } else {
@@ -416,4 +420,3 @@ let resetGame = () => {
 }
 
 userDecision();
-//hello
