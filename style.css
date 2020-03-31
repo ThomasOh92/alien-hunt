@@ -3,8 +3,13 @@ body{
 	background-color: black;
 	justify-content: center;
 	flex-direction: row;
-	flex-wrap: wrap;
 	align-items: center;
+}
+
+h2 {
+  color: aqua;
+  text-transform: uppercase;
+  font-family: 'Exo 2', sans-serif;
 }
 
 .hidden{
@@ -29,8 +34,16 @@ body{
 	background-color: rgba(0, 255, 0, 0.4);
 }
 
+
+
 #message, #attack-display{
 	color: white;
+}
+
+#game-section{
+	display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #game-board{
@@ -57,7 +70,7 @@ body{
 	flex-direction: column;
 }
 
-#move-button, #attack-button, #attack-probability-display, #play-again-button, #hit-message, #miss-message, #alien-message {
+#move-button, #attack-button, #attack-probability-display, #play-again-button, #hit-message, #miss-message, #alien-message, #start-game-button {
 	height: 30px;
   background: none;
   color: aqua;
@@ -68,10 +81,41 @@ body{
   font-family: 'Exo 2', sans-serif;
 }
 
-#move-button, #attack-button, #play-again-button {
+#move-button, #attack-button, #play-again-button, #start-game-button {
   border: 0.2em solid aqua;
 }
+
+#start-game-button:hover{
+	background-color: rgba(0, 255, 255, 0.4);
+}
+
+#move-button:hover{
+	background-color: rgba(0, 255, 255, 0.4);
+}
+
+#attack-button:hover{
+	background-color: rgba(0, 255, 255, 0.4);
+}
+
+#play-again-button:hover{
+	background-color: rgba(0, 255, 255, 0.4);
+}
+
 #hit-gif, #miss-gif, #thinking-alien-gif, #shooting-alien-gif, #walking-alien-gif, #alien-hit-gif, #alien-miss-gif{
 	height: 150px;
 	width: 250px;
+}
+
+#start-screen{
+	position: absolute;
+	background-color: black;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	width: 100%
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0
 }

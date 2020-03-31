@@ -1,3 +1,9 @@
+let clearGameStartScreen = () => {
+    document.getElementById('start-screen').style.display = "none";
+    document.body.style.flexWrap = "wrap";
+}
+document.getElementById('start-game-button').addEventListener('click', clearGameStartScreen)
+///
 let gameState = [];
 let gameBoard = document.getElementById('game-board');
 let userPositionRow = 0;
@@ -202,6 +208,7 @@ let soldierAttack = async () => {
     missMessage.innerText = "You missed!";
 
     if (chance < attackProbability){
+        document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "url('img/soldier_dom_shooting.png')";
         //Display hit gif
         document.getElementById('attack-button').classList.add('hidden')
         document.getElementById('move-button').classList.add('hidden')
@@ -214,8 +221,10 @@ let soldierAttack = async () => {
         hitGif.classList.add('hidden');
         headsUpDisplay.appendChild(hitMessage);
         headsUpDisplay.appendChild(playAgainButton);
+        document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "url('img/soldier_face_right.png')";
         return;
      } else {
+        document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "url('img/soldier_dom_shooting.png')";
         //Display miss gif
         document.getElementById('attack-button').classList.add('hidden')
         document.getElementById('move-button').classList.add('hidden')
@@ -226,6 +235,7 @@ let soldierAttack = async () => {
         headsUpDisplay.appendChild(missMessage);
         headsUpDisplay.appendChild(missGif)
         await wait(4000);
+        document.getElementById(`${userPositionRow},${userPositionColumn}`).style.backgroundImage = "url('img/soldier_face_right.png')"
         }
     alienAction()
 }
@@ -275,6 +285,7 @@ let alienAction = async () => {
     await wait(2000);
     if (lineOfSight()){ //Alien attack
         alienMessage.innerText = "Alien will attack!"
+        document.getElementById(`${alienPositionRow},${alienPositionColumn}`).style.backgroundImage = "url('img/alien_dom_shooting.png')"
         let shootingAlien = document.createElement('img');
         shootingAlien.src = "img/alien_shooting.gif";
         shootingAlien.id = "shooting-alien-gif";
@@ -300,6 +311,7 @@ let alienAction = async () => {
             playAgainButton.addEventListener('click', resetGame);
             headsUpDisplay.appendChild(playAgainButton);
             //exit the function
+            document.getElementById(`${alienPositionRow},${alienPositionColumn}`).style.backgroundImage = "url('img/alien_idle_face_right.png')"
             return
         } else {
             let alienMissGif = document.createElement('img');
@@ -309,6 +321,7 @@ let alienAction = async () => {
             alienMessage.innerText = "The Alien Missed!"
             await wait(2000);
             headsUpDisplay.removeChild(alienMissGif);
+            document.getElementById(`${alienPositionRow},${alienPositionColumn}`).style.backgroundImage = "url('img/alien_idle_face_right.png')";
         }
     } else{ //Alien move
         alienMessage.innerText = "Alien will move!"
